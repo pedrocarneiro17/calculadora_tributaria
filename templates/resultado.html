@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados - Consultor Tributário</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #ffffff; 
+            color: #1a1a1a;
+        }
+        .card { 
+            border: 1px solid #e0e0e0; 
+            box-shadow: none;
+            background-color: #fafafa;
+        }
+        .regime-card { 
+            transition: transform 0.2s;
+            background-color: #ffffff;
+        }
+        .regime-card:hover { transform: translateY(-5px); }
+        .badge-recomendado { 
+            background-color: #4285f4; 
+            font-size: 0.85rem;
+            padding: 6px 12px;
+        }
+        .valor-destaque { 
+            font-size: 2rem; 
+            font-weight: 600; 
+            color: #1a1a1a;
+        }
+        .btn-print { 
+            position: fixed; 
+            bottom: 30px; 
+            right: 30px;
+            background-color: #4285f4;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .btn-print:hover {
+            background-color: #3367d6;
+        }
+        .btn-outline-secondary {
+            border-color: #dadce0;
+            color: #5f6368;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #f5f5f5;
+            border-color: #dadce0;
+            color: #202124;
+        }
+        h2 {
+            color: #202124;
+            font-weight: 400;
+        }
+        h5, h6 {
+            color: #202124;
+            font-weight: 500;
+        }
+        .table {
+            font-size: 0.875rem;
+        }
+        .table th {
+            font-weight: 500;
+            color: #5f6368;
+        }
+        .table-bordered {
+            border-color: #dadce0;
+        }
+        .table-bordered th,
+        .table-bordered td {
+            border-color: #dadce0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Resultados da Simulação</h2>
+                    <a href="/" class="btn btn-outline-secondary">← Nova Simulação</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projeção RBT12 -->
+        {% if projecao %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Projeção RBT12 Próximos Meses</h5>
+                        <div class="row text-center mt-3">
+                            <div class="col-md-4">
+                                <h6>Próximo Mês</h6>
+                                <p class="h4 text-primary">{{ projecao.mes1 | currency }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Daqui 2 Meses</h6>
+                                <p class="h4 text-primary">{{ projecao.mes2 | currency }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Daqui 3 Meses</h6>
+                                <p class="h4 text-primary">{{ projecao.mes3 | currency }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Resultados dos Regimes -->
+        <div class="row">
+            {% if resultados.simples_nacional %}
+            <div class="col-md-4">
+                <div class="card regime-card {% if recomendado == 'simples_nacional' %}border-success border-3{% endif %}">
+                    <div class="card-body">
+                        {% if recomendado == 'simples_nacional' %}
+                        <span class="badge badge-recomendado mb-2">✓ RECOMENDADO</span>
+                        {% endif %}
+                        <h5 class="card-title">Simples Nacional</h5>
+                        <p class="valor-destaque">{{ resultados.simples_nacional.imposto_total | currency }}</p>
+                        <p class="text-muted mb-3">Imposto Total Mensal</p>
+                        
+                        <hr>
+                        <div class="small">
+                            <p><strong>Alíquota Efetiva:</strong> {{ "%.2f"|format(resultados.simples_nacional.aliquota_efetiva) }}%</p>
+                            <p><strong>Carga Tributária:</strong> {{ "%.2f"|format(resultados.simples_nacional.carga_tributaria) }}%</p>
+                            <p><strong>DAS Mensal:</strong> {{ resultados.simples_nacional.imposto_mensal | currency }}</p>
+                            <p><strong>INSS Pró-labore:</strong> {{ resultados.simples_nacional.inss_prolabore | currency }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if resultados.lucro_presumido %}
+            <div class="col-md-4">
+                <div class="card regime-card {% if recomendado == 'lucro_presumido' %}border-success border-3{% endif %}">
+                    <div class="card-body">
+                        {% if recomendado == 'lucro_presumido' %}
+                        <span class="badge badge-recomendado mb-2">✓ RECOMENDADO</span>
+                        {% endif %}
+                        <h5 class="card-title">Lucro Presumido</h5>
+                        <p class="valor-destaque">{{ resultados.lucro_presumido.imposto_total | currency }}</p>
+                        <p class="text-muted mb-3">Imposto Total Mensal</p>
+                        
+                        <hr>
+                        <div class="small">
+                            <p><strong>Carga Tributária:</strong> {{ "%.2f"|format(resultados.lucro_presumido.carga_tributaria) }}%</p>
+                            <p><strong>PIS:</strong> {{ resultados.lucro_presumido.pis | currency }}</p>
+                            <p><strong>COFINS:</strong> {{ resultados.lucro_presumido.cofins | currency }}</p>
+                            <p><strong>IRPJ:</strong> {{ resultados.lucro_presumido.irpj | currency }}</p>
+                            <p><strong>CSLL:</strong> {{ resultados.lucro_presumido.csll | currency }}</p>
+                            <p><strong>INSS:</strong> {{ resultados.lucro_presumido.inss | currency }}</p>
+                            <p><strong>ISS:</strong> {{ resultados.lucro_presumido.iss | currency }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if resultados.lucro_real %}
+            <div class="col-md-4">
+                <div class="card regime-card {% if recomendado == 'lucro_real' %}border-success border-3{% endif %}">
+                    <div class="card-body">
+                        {% if recomendado == 'lucro_real' %}
+                        <span class="badge badge-recomendado mb-2">✓ RECOMENDADO</span>
+                        {% endif %}
+                        <h5 class="card-title">Lucro Real</h5>
+                        <p class="valor-destaque">{{ resultados.lucro_real.imposto_total | currency }}</p>
+                        <p class="text-muted mb-3">Imposto Total Mensal</p>
+                        
+                        <hr>
+                        <div class="small">
+                            <p><strong>Carga Tributária:</strong> {{ "%.2f"|format(resultados.lucro_real.carga_tributaria) }}%</p>
+                            <p><strong>Lucro Real:</strong> {{ resultados.lucro_real.lucro_real | currency }}</p>
+                            <p><strong>PIS:</strong> {{ resultados.lucro_real.pis | currency }}</p>
+                            <p><strong>COFINS:</strong> {{ resultados.lucro_real.cofins | currency }}</p>
+                            <p><strong>IRPJ:</strong> {{ resultados.lucro_real.irpj | currency }}</p>
+                            <p><strong>CSLL:</strong> {{ resultados.lucro_real.csll | currency }}</p>
+                            <p><strong>INSS:</strong> {{ resultados.lucro_real.inss | currency }}</p>
+                            <p><strong>ISS:</strong> {{ resultados.lucro_real.iss | currency }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Dados da Simulação -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Dados Utilizados na Simulação</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6 class="text-primary">Faturamento</h6>
+                                <p><strong>Vendas (mensal):</strong> {{ dados.faturamento_vendas | currency }}</p>
+                                <p><strong>Serviços (mensal):</strong> {{ dados.faturamento_servicos | currency }}</p>
+                                <p><strong>RBT12:</strong> {{ dados.rbt12 | currency }}</p>
+                                
+                                {% if dados.modo_calculo == 'detailed' and dados.valores_mensais %}
+                                <h6 class="text-primary mt-4">Faturamento e DAS Mensal (Últimos 12 Meses)</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead style="background-color: #f5f5f5;">
+                                            <tr>
+                                                <th>Mês</th>
+                                                <th>Faturamento</th>
+                                                <th>DAS Simples</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for i in range(12) %}
+                                            <tr>
+                                                <td><strong>Mês {{ i + 1 }}</strong></td>
+                                                <td>{{ dados.valores_mensais[i] | currency }}</td>
+                                                <td>{{ dados.impostos_mensais[i] | currency if dados.impostos_mensais else 'N/A' }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            <tr style="background-color: #e8f0fe; font-weight: 600;">
+                                                <td><strong>TOTAL</strong></td>
+                                                <td>{{ dados.rbt12 | currency }}</td>
+                                                <td>{{ (dados.impostos_mensais | sum) | currency if dados.impostos_mensais else 'N/A' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% endif %}
+                                
+                                <h6 class="text-primary mt-4">Folha e Pró-labore</h6>
+                                <p><strong>Folha Salarial (anual):</strong> {{ dados.folha_salarial | currency }}</p>
+                                <p><strong>Pró-labore (anual):</strong> {{ dados.prolabore | currency }}</p>
+                                <p><strong>FGTS (anual):</strong> {{ dados.fgts_anual | currency }}</p>
+                            </div>
+                            <div class="col-md-4">
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-primary">Custos e Despesas</h6>
+                                <p><strong>CMV (anual):</strong> {{ dados.cmv | currency }}</p>
+                                <p><strong>Despesas Operacionais (anual):</strong> {{ dados.despesas_operacionais | currency }}</p>
+                                <p><strong>Créditos PIS/COFINS:</strong> {{ dados.pis_cofins_creditos | currency }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-primary">Alíquotas</h6>
+                                <p><strong>ISS:</strong> {{ dados.aliquota_iss }}%</p>
+                                <p><strong>ICMS:</strong> {{ dados.aliquota_icms }}%</p>
+                                <p><strong>Serviço Intelectual:</strong> {% if dados.servico_intelectual %}Sim{% else %}Não{% endif %}</p>
+                                
+                                <h6 class="text-primary mt-4">Modo de Cálculo</h6>
+                                <p><strong>Tipo:</strong> {% if dados.modo_calculo == 'detailed' %}Detalhado (12 meses){% else %}Rápido{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botão Imprimir/PDF -->
+        <button onclick="window.print()" class="btn btn-primary btn-lg btn-print shadow">
+            Gerar PDF
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Adiciona estilo para impressão
+        window.onbeforeprint = function() {
+            document.querySelector('.btn-print').style.display = 'none';
+        }
+        window.onafterprint = function() {
+            document.querySelector('.btn-print').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
